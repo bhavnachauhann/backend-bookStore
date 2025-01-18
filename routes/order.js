@@ -54,38 +54,58 @@ const order = require("../models/order");
 //   });
 
 
-router.post("/place-order", authentication , async (req, res) => {
+router.post("/place-order", authentication, async (req, res) => {
   try {
-    const{id} = req.headers;
-    const{order}= req.body;
-    console.log(order);
-    for(const orderData of order){
-      const newOrder = new Order({ user: id, book: orderData._id});
-      
-      const orderDataFromDb= await newOrder.save();
-      console.log(orderDataFromDb);
-      await User.findByIdAndUpdate(id, {
-        $push: { order: orderDataFromDb._id},
-      });
-      await User.findByIdAndUpdate(id,{
-        $pull:{ cart: orderData._id},
-      });
+    const { id } = req.headers;
+    const { order } = req.body;
+  
+
+    // Validate id and order
+    if (!id) {
+      console.error("User ID is missing.");
+      return res.status(400).json({ message: "User ID is missing from headers." });
     }
 
+    if (!order || order.length === 0) {
+      console.error("Order data is empty.");
+      return res.status(400).json({ message: "Order data is empty." });
+    }
+
+    console.log("User ID:", id);
+    console.log("Order Data:", order);
+
+    // Process each order
+    for (const orderData of order) {
+      try {
+        const newOrder = new Order({ user: id, book: orderData._id });
+        const orderDataFromDb = await newOrder.save();
+
+        console.log("Order Saved:", orderDataFromDb);
+
+        await User.findByIdAndUpdate(id, {
+          $push: { order: orderDataFromDb._id },
+        });
+
+        await User.findByIdAndUpdate(id, {
+          $pull: { cart: orderData._id },
+        });
+      } catch (error) {
+        console.error("Error processing order for book ID:", orderData,id, error);
+        return res.status(500).json({ message: `Error processing order for book ID: ${orderData._id}` });
+      }
+    }
+
+    // Success response
     return res.json({
-      status:"Success",
+      status: "Success",
       message: "Order Placed Successfully",
     });
-
+  } catch (error) {
+    console.error("Unexpected Error:", error);
+    return res.status(500).json({ message: "An error occurred while processing the order." });
   }
-  catch(error){
-    return res.status(500).json({message: "An Error Occured"});
+});
 
-  }
-  
-})
-  
-  
 
 
 // get order history of the particular user

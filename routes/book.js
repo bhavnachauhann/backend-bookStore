@@ -15,7 +15,7 @@ router.post("/add-book", authentication, async (req, res) => {
         const { id } = req.headers;
         const user = await User.findById(id);
 
-        if (user || user.role !== "admin") {
+        if (user && user.role !== "admin") {
             return res.status(403).json({ message: "You don't have access to perform admin work" });
         }
 
@@ -88,7 +88,7 @@ router.delete("/delete-book", authentication, async (req, res) => {
 // get all books 
 router.get("/get-all-book", async (req, res) => {
     try {
-        const books= await Book.find().sort({ createdAt: -1}).limit(4);
+        const books= await Book.find().sort({ createdAt: -1});
         
         return res.json({ status: "Success", 
             data:books,

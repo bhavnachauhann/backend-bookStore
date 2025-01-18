@@ -1,21 +1,24 @@
-const mongoose= require("mongoose");
-const order = new mongoose.Schema({
-    user:{
-        type: mongoose.Types.ObjectId,
-        ref:"books",
+const mongoose = require("mongoose");
+
+const orderSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user", // Reference the User model
+      required: true,
     },
-    book:{
-        type: mongoose.Types.ObjectId,
-        ref:"books",
+    book: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "books", // Reference the Books model
+      required: true,
     },
-    status:{
-        type:mongoose.Types.ObjectId,
-        default:"Order placed",
-        enum:["order Placed", "out for delivery, Delivered, Canceled"]
-        
+    status: {
+      type: String, // Use String for predefined statuses
+      default: "Order placed",
+      enum: ["Order placed", "Out for delivery", "Delivered", "Canceled"],
     },
-    
-},
-{timestamps:true}
+  },
+  { timestamps: true }
 );
-module.exports=mongoose.model("order", order);
+
+module.exports = mongoose.model("order", orderSchema);
